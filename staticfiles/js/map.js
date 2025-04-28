@@ -1,5 +1,7 @@
-// Global map instance to prevent multiple initializations
+// Global variables
 let mapInstance = null;
+let countriesGeoJSON = null;
+let visits = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     // Check if map container exists
@@ -64,22 +66,45 @@ document.addEventListener('DOMContentLoaded', function() {
         this.update();
         return this._div;
     };
+    
     info.update = function(props) {
-        const isoCode = props ? (props.iso_a2 || props.ISO_A2 || props.iso_a3 || '') : '';
+        // Fixed ISO code extraction with better fallback handling
+        const isoCode = props ? getIsoCode(props) : '';
         this._div.innerHTML = '<h4>Country Info</h4>' + (props ?
             '<b>' + props.name + '</b><br />ISO: ' + isoCode :
             'Hover over a country');
     };
     info.addTo(mapInstance);
 
+    // Helper function to extract ISO code consistently
+    function getIsoCode(feature) {
+        if (!feature) return '';
+        
+        // If feature is a string or direct ID, return it
+        if (typeof feature === 'string') return feature;
+        
+        // Check if we're getting the full feature or just properties
+        const props = feature.properties || feature;
+        
+        // Try all possible ISO code variations in order of preference
+        return props.ISO_A2 || // Standard uppercase
+               props.iso_a2 || // Standard lowercase
+               props.ISO2 ||   // Alternative format
+               props.iso2 ||   // Alternative lowercase
+               (props.iso && props.iso.toUpperCase()) || // ISO property
+               props.ISO_A3 || // 3-letter code uppercase
+               props.iso_a3 || // 3-letter code lowercase
+               '';
+    }
+
     // Fetch countries and visits
-    let countriesGeoJSON, visits = [];
     const visitedCountriesList = document.getElementById('visited-countries');
     const wantToVisitCountriesList = document.getElementById('want-to-visit-countries');
 
     // Function to get CSRF token
     function getCsrfToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+        return tokenElement ? tokenElement.value : '';
     }
 
     // Fetch all GeoJSON data first
@@ -90,10 +115,20 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(geojson => {
             console.log("GeoJSON loaded successfully");
+            // Validate the GeoJSON data
+            if (!geojson || !geojson.features || !Array.isArray(geojson.features)) {
+                throw new Error('Invalid GeoJSON data structure');
+            }
+            
+            // Log a sample feature to check the structure
+            if (geojson.features.length > 0) {
+                console.log("Sample country properties:", geojson.features[0].properties);
+            }
+            
             countriesGeoJSON = geojson;
             
             // Then fetch user visits
-            return fetch('/countries/api/visits/');
+            return fetch('/api/visits/');
         })
         .then(response => {
             if (!response.ok) throw new Error('Failed to fetch visits');
@@ -106,7 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateLists();
         })
         .catch(error => {
-            console.error('Error initializing map data:', error);
+            console.error('Error loading visits:', error);
+            showNotification('Failed to load visits. Please refresh the page.', 'warning');
             // Still try to load the map even if visits can't be fetched
             if (countriesGeoJSON) {
                 updateMap();
@@ -128,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // Create arrays of ISO codes for easy lookup
         const visitedIsoCodes = visits
             .filter(v => v.status === 'visited')
             .map(v => v.country.iso_code);
@@ -141,10 +178,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         L.geoJSON(countriesGeoJSON, {
             style: function(feature) {
-                // Get ISO code from various possible properties
-                const isoCode = feature.properties.iso_a2 || 
-                               feature.properties.ISO_A2 || 
-                               feature.properties.iso_a3;
+                // Get ISO code from the feature properties
+                const isoCode = getIsoCode(feature.id);
                 
                 let fillColor = '#3388ff'; // Default blue - Not visited
                 
@@ -164,14 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             },
             onEachFeature: function(feature, layer) {
-                // Get country details from properties
+                // Get country details from properties with improved ISO extraction
                 const countryName = feature.properties.name;
-                const isoCode = feature.properties.iso_a2 || 
-                              feature.properties.ISO_A2 || 
-                              feature.properties.iso_a3;
+                const isoCode = getIsoCode(feature.id);
                 
                 if (!isoCode) {
-                    console.warn(`No ISO code found for ${countryName}`);
+                    console.warn(`No ISO code found for country: ${countryName}`, feature);
                 }
                 
                 layer.on({
@@ -198,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     click: function(e) {
                         if (!isoCode) {
                             console.error('Cannot mark country without ISO code:', countryName);
-                            alert('Error: This country does not have a valid ISO code');
+                            showNotification('Error: This country does not have a valid ISO code', 'danger');
                             return;
                         }
                         
@@ -299,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
             moveBtn.className = 'btn btn-outline-primary';
             moveBtn.innerHTML = '<i class="fas fa-plane"></i>';
             moveBtn.title = 'Move to Want to Visit';
-            moveBtn.onclick = () => updateVisit(visit.country.iso_code, 'want_to_visit');
+            moveBtn.onclick = () => markCountry(visit.country.iso_code, 'want_to_visit');
             btnGroup.appendChild(moveBtn);
         } else {
             // In want to visit list, add "mark as visited" button
@@ -307,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
             visitedBtn.className = 'btn btn-outline-success';
             visitedBtn.innerHTML = '<i class="fas fa-check"></i>';
             visitedBtn.title = 'Mark as Visited';
-            visitedBtn.onclick = () => updateVisit(visit.country.iso_code, 'visited');
+            visitedBtn.onclick = () => markCountry(visit.country.iso_code, 'visited');
             btnGroup.appendChild(visitedBtn);
         }
         
@@ -323,39 +356,59 @@ document.addEventListener('DOMContentLoaded', function() {
         listElement.appendChild(li);
     }
 
-    function createVisit(isoCode, status) {
+    // Replace the existing createVisit function
+    async function createVisit(isoCode, status) {
         console.log(`Creating visit for ${isoCode} with status ${status}`);
         
-        fetch('/countries/api/visits/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-            },
-            body: JSON.stringify({ iso_code: isoCode, status: status }),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Failed to create visit: ${response.status} ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
+        // Validate inputs
+        if (!isoCode || !status) {
+            showNotification('Error: Invalid parameters', 'danger');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/visits/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                body: JSON.stringify({ 
+                    iso_code: isoCode, 
+                    status: status 
+                }),
+            });
+
+            
+
+            const data = await response.json();
             console.log('Visit created successfully:', data);
+            
+            // Update local data
             visits.push(data);
+            
+            // Update UI
             mapInstance.closePopup();
             showNotification(`Country marked as ${status === 'visited' ? 'visited' : 'want to visit'}`);
+            
+            // Refresh map and lists
             updateMap();
             updateLists();
-        })
-        .catch(error => {
+
+        } catch (error) {
             console.error('Error creating visit:', error);
-            showNotification('Failed to mark country. Please try again.', 'danger');
-        });
+            showNotification(`Failed to mark country: ${error.message}`, 'danger');
+        }
     }
 
     function updateVisit(isoCode, status) {
         console.log(`Updating visit for ${isoCode} to ${status}`);
+        
+        // Check that we have a valid ISO code
+        if (!isoCode) {
+            showNotification('Error: Invalid country code', 'danger');
+            return;
+        }
         
         fetch(`/countries/api/visits/${isoCode}/`, {
             method: 'PUT',
@@ -373,6 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             console.log('Visit updated successfully:', data);
+            // Find and update the visit in our local data
             const index = visits.findIndex(v => v.country.iso_code === isoCode);
             if (index !== -1) {
                 visits[index] = data;
@@ -390,6 +444,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function removeCountry(isoCode) {
         console.log(`Removing country ${isoCode}`);
+        
+        // Check that we have a valid ISO code
+        if (!isoCode) {
+            showNotification('Error: Invalid country code', 'danger');
+            return;
+        }
         
         fetch(`/countries/api/visits/${isoCode}/`, {
             method: 'DELETE',
@@ -455,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // Make functions available globally
+    // Make markCountry function available globally
     window.markCountry = function(isoCode, status) {
         if (!isoCode) {
             console.error('Invalid ISO code');
@@ -477,7 +537,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Make removeCountry function available globally
     window.removeCountry = function(isoCode) {
         removeCountry(isoCode);
     };
+
+    // Add search functionality
+    const searchInput = document.getElementById('country-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            if (!countriesGeoJSON || !countriesGeoJSON.features) return;
+            
+            const results = countriesGeoJSON.features
+                .filter(feature => {
+                    const countryName = feature.properties.name || '';
+                    return countryName.toLowerCase().includes(searchTerm);
+                })
+                .slice(0, 5); // Limit to top 5 results
+            
+            // Display search results
+            const resultsContainer = document.getElementById('search-results');
+            if (resultsContainer) {
+                resultsContainer.innerHTML = '';
+                
+                if (searchTerm.length > 0 && results.length > 0) {
+                    results.forEach(result => {
+                        const country = result.properties;
+                        const isoCode = getIsoCode(country);
+                        
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        resultItem.innerHTML = `${country.name} ${isoCode.length === 2 ? getFlagEmoji(isoCode) : ''}`;
+                        resultItem.onclick = () => {
+                            // Find country on map and zoom to it
+                            const bounds = L.geoJSON(result).getBounds();
+                            mapInstance.fitBounds(bounds);
+                            // Create a temporary marker
+                            const center = bounds.getCenter();
+                            const marker = L.marker(center).addTo(mapInstance);
+                            setTimeout(() => mapInstance.removeLayer(marker), 2000);
+                            // Clear search
+                            searchInput.value = '';
+                            resultsContainer.innerHTML = '';
+                        };
+                        resultsContainer.appendChild(resultItem);
+                    });
+                } else if (searchTerm.length > 0) {
+                    resultsContainer.innerHTML = '<div class="no-results">No countries found</div>';
+                }
+            }
+        });
+    }
 });
