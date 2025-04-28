@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - World Map Tracker{% endblock %}
+
+{% block content %}
+<h2>Your Profile</h2>
+<p>Welcome, {{ user.username }}!</p>
+<h3>Your Travel History</h3>
+{% if visits %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Countries You've Visited</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for visit in visits %}
+                            {% if visit.status == 'visited' %}
+                                <li class="list-group-item">{{ visit.country.name }} (Visited on {{ visit.visited_at|date:"Y-m-d" }})</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Countries You Want to Visit</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for visit in visits %}
+                            {% if visit.status == 'want_to_visit' %}
+                                <li class="list-group-item">{{ visit.country.name }} (Added on {{ visit.visited_at|date:"Y-m-d" }})</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <p>You haven't marked any countries yet. Visit the <a href="{% url 'countries:index' %}">map</a> to start tracking!</p>
+{% endif %}
+<a href="{% url 'users:logout' %}">Logout</a>
+{% endblock %}

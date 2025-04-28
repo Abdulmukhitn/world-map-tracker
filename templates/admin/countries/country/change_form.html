@@ -1,0 +1,11 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a href="{% url 'admin:countries_visit_changelist' %}?country__id__exact={{ object_id }}" class="viewlink">
+            View Visits
+        </a>
+    </li>
+{% endblock %}

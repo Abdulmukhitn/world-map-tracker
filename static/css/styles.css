@@ -1,0 +1,179 @@
+/* static/css/styles.css */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Map container */
+#map {
+    height: 500px;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    z-index: 1;
+}
+
+/* Cards */
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+/* Scrollable lists for countries */
+.card-body {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Badges */
+.badge {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.badge:hover {
+    background-color: #dc3545;
+    transform: scale(1.1);
+}
+
+/* AI response */
+#ai-response {
+    border-left: 4px solid #17a2b8;
+    background-color: #f8f9fa;
+}
+
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.btn-group-sm > .btn {
+    padding: .25rem .5rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+    margin-left: 4px;
+}
+
+/* Map popup buttons */
+.leaflet-popup-content .btn {
+    margin: 2px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Country info box */
+#country-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+/* Make the app responsive */
+@media (max-width: 768px) {
+    #map {
+        height: 50vh;
+    }
+    
+    .card {
+        margin-bottom: 20px;
+    }
+}
+
+.leaflet-popup-content {
+    min-width: 200px;
+    padding: 10px;
+}
+
+.leaflet-popup-content h6 {
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.leaflet-popup-content .btn-group-vertical {
+    width: 100%;
+}
+
+.leaflet-popup-content .btn {
+    margin-bottom: 5px;
+    white-space: nowrap;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+}
+
+/* Country click popup styles */
+.country-modal {
+    text-align: center;
+    padding: 10px;
+    min-width: 200px;
+}
+
+.country-modal h5 {
+    margin-bottom: 15px;
+    text-align: center;
+    color: #333;
+    font-weight: bold;
+}
+
+.country-modal .btn {
+    width: 100%;
+    margin-bottom: 5px;
+    text-align: left;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.country-modal .btn i {
+    margin-right: 8px;
+}
+
+.btn-group-vertical {
+    width: 100%;
+}
+
+.btn-group-vertical .btn {
+    margin-bottom: 5px;
+}
+
+.legend {
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
