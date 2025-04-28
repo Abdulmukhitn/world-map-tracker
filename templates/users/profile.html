@@ -1,48 +1,427 @@
+
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Profile - World Map Tracker{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Card and container styling */
+    .profile-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 2.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 150px;
+        height: 100%;
+        background-image: url('{% static "images/world-pattern.svg" %}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: right;
+        opacity: 0.1;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transform: translateY(0);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        border: none;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Stats styling */
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    .color-primary { color: #2a5298; }
+    .color-success { color: #28a745; }
+    .color-info { color: #17a2b8; }
+
+    /* Loading states with improved animation */
+    .stats-card.loading {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-card.loading::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        animation: shimmer 2s infinite;
+        z-index: 0;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* Progress bar enhancements */
+    .progress-wrapper {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-top: 1rem;
+        opacity: 0;
+        animation: fadeIn 0.8s ease-out 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    .progress {
+        height: 12px;
+        margin-top: 0.75rem;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-bar {
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 2%;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+        background-size: 1rem 1rem;
+        animation: progress-bar-stripes 1s linear infinite;
+    }
+    
+    @keyframes progress-bar-stripes {
+        from {
+            background-position: 1rem 0;
+        }
+        to {
+            background-position: 0 0;
+        }
+    }
+
+    /* Country list styling */
+    .country-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .country-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        padding: 1.25rem;
+        border-bottom: none;
+    }
+
+    .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        transition: all 0.2s ease;
+        border-left: 0;
+        border-right: 0;
+    }
+
+    .list-group-item:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+        transform: translateX(5px);
+    }
+    
+    .list-group-item:first-child {
+        border-top: none;
+    }
+    
+    .visited-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        padding: 4rem 0;
+        text-align: center;
+    }
+    
+    .empty-state i {
+        color: #d1d1d1;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state h3 {
+        margin-bottom: 1rem;
+        color: #444;
+    }
+    
+    .empty-state .lead {
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+
+    /* Error state with improved styling */
+    .error-state {
+        color: #dc3545;
+        padding: 1.5rem;
+        text-align: center;
+        background: rgba(220, 53, 69, 0.05);
+        border-radius: 12px;
+        margin: 1.5rem 0;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .error-state i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Logout button styling */
+    .logout-btn {
+        display: inline-block;
+        color: #6c757d;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        margin-bottom: 3rem;
+        font-weight: 500;
+    }
+    
+    .logout-btn:hover {
+        color: #dc3545;
+        background: rgba(220, 53, 69, 0.1);
+        text-decoration: none;
+    }
+    
+    .logout-btn i {
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h2>Your Profile</h2>
-<p>Welcome, {{ user.username }}!</p>
-<h3>Your Travel History</h3>
-{% if visits %}
+{% if error %}
+<div class="error-state">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button class="btn btn-outline-danger btn-sm" onclick="location.reload()">Try Again</button>
+</div>
+{% endif %}
+
+<div class="profile-header" id="profile-header" {% if not user %}style="display: none;"{% endif %}>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-0">Welcome, {{ user.username }}! 👋</h2>
+                <p class="mb-0 mt-2 text-white-50">Member since {{ user.date_joined|date:"F j, Y" }}</p>
+            </div>
+            <div class="col-md-4">
+                <div class="progress-wrapper">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="mb-1">Exploration Progress</p>
+                        <span class="badge bg-light text-dark">{{ completion_percentage|default:0|floatformat:1 }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             
+                             aria-valuenow="{{ completion_percentage|default:0 }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-white-50 mt-2 d-block">
+                        <i class="fas fa-globe-americas me-1"></i> {{ visited_count }} of {{ total_countries }} countries visited
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stats-card {% if not visited_count %}loading{% endif %}">
+                <div class="stats-number color-success">
+                    {{ visited_count|default:"--" }}
+                </div>
+                <p class="stats-label">Countries Visited</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card {% if not want_to_visit_count %}loading{% endif %}">
+                <div class="stats-number color-primary">
+                    {{ want_to_visit_count|default:"--" }}
+                </div>
+                <p class="stats-label">Want to Visit</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card {% if not total_countries %}loading{% endif %}">
+                <div class="stats-number color-info">
+                    {{ total_countries|default:"--" }}
+                </div>
+                <p class="stats-label">Total Countries</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if visits %}
     <div class="row">
         <div class="col-md-6">
-            <div class="card">
+            <div class="country-card">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Countries You've Visited</h5>
+                    <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Countries You've Visited</h5>
                 </div>
-                <div class="card-body">
-                    <ul class="list-group">
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush country-list">
                         {% for visit in visits %}
                             {% if visit.status == 'visited' %}
-                                <li class="list-group-item">{{ visit.country.name }} (Visited on {{ visit.visited_at|date:"Y-m-d" }})</li>
+                                <li class="list-group-item">
+                                    <span><i class="fas fa-map-marker-alt me-2"></i>{{ visit.country.name }}</span>
+                                    <span class="visited-date">{{ visit.visited_at|date:"M j, Y" }}</span>
+                                </li>
                             {% endif %}
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted">No countries visited yet</li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
+            <div class="country-card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Countries You Want to Visit</h5>
+                    <h5 class="mb-0"><i class="fas fa-plane me-2"></i>Travel Wishlist</h5>
                 </div>
-                <div class="card-body">
-                    <ul class="list-group">
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush country-list">
                         {% for visit in visits %}
                             {% if visit.status == 'want_to_visit' %}
-                                <li class="list-group-item">{{ visit.country.name }} (Added on {{ visit.visited_at|date:"Y-m-d" }})</li>
+                                <li class="list-group-item">
+                                    <span><i class="fas fa-heart me-2"></i>{{ visit.country.name }}</span>
+                                    <span class="visited-date">Added {{ visit.visited_at|date:"M j, Y" }}</span>
+                                </li>
                             {% endif %}
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted">No countries in your wishlist yet</li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-{% else %}
-    <p>You haven't marked any countries yet. Visit the <a href="{% url 'countries:index' %}">map</a> to start tracking!</p>
-{% endif %}
-<a href="{% url 'users:logout' %}">Logout</a>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-globe fa-5x"></i>
+        <h3>Start Your Journey!</h3>
+        <p class="lead">You haven't marked any countries on your map yet.</p>
+        <a href="{% url 'countries:map' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-map-marked-alt me-2"></i>Explore the Map
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="text-center">
+        <a href="{% url 'users:logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>Logout
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle loading states with animation
+        const loadingCards = document.querySelectorAll('.stats-card.loading');
+        
+        // Gradually remove loading state with staggered timing
+        loadingCards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('fade-in');
+                setTimeout(() => {
+                    card.classList.remove('loading');
+                }, 300);
+            }, 300 * index);
+        });
+        
+        // Show profile header with animation if it was hidden
+        const profileHeader = document.getElementById('profile-header');
+        if (profileHeader && profileHeader.style.display === 'none') {
+            setTimeout(() => {
+                profileHeader.style.display = 'block';
+                profileHeader.style.opacity = '0';
+                profileHeader.style.transform = 'translateY(-20px)';
+                profileHeader.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                
+                setTimeout(() => {
+                    profileHeader.style.opacity = '1';
+                    profileHeader.style.transform = 'translateY(0)';
+                }, 50);
+            }, 500);
+        }
+        
+        // Add country list animations
+        const countryItems = document.querySelectorAll('.country-list .list-group-item');
+        countryItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(20px)';
+            item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateX(0)';
+            }, 100 + (index * 50));
+        });
+    });
+</script>
 {% endblock %}

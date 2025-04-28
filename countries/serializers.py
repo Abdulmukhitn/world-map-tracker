@@ -8,7 +8,7 @@ class CountrySerializer(serializers.ModelSerializer):
 
 class VisitSerializer(serializers.ModelSerializer):
     country = CountrySerializer()
-
+    
     class Meta:
         model = Visit
-        fields = ['country', 'status', 'visited_date']
+        fields = ['country', 'status', 'created_at']  # Changed visited_date to created_at

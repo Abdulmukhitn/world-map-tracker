@@ -1,5 +1,7 @@
-// Global map instance to prevent multiple initializations
+// Global variables
 let mapInstance = null;
+let countriesGeoJSON = null;
+let visits = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     // Check if map container exists
@@ -96,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Fetch countries and visits
-    let countriesGeoJSON, visits = [];
     const visitedCountriesList = document.getElementById('visited-countries');
     const wantToVisitCountriesList = document.getElementById('want-to-visit-countries');
 
@@ -127,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
             countriesGeoJSON = geojson;
             
             // Then fetch user visits
-            return fetch('/countries/api/visits/');
+            return fetch('/api/visits/');
         })
         .then(response => {
             if (!response.ok) throw new Error('Failed to fetch visits');
@@ -140,12 +141,11 @@ document.addEventListener('DOMContentLoaded', function() {
             updateLists();
         })
         .catch(error => {
-            console.error('Error initializing map data:', error);
+            console.error('Error loading visits:', error);
+            showNotification('Failed to load visits. Please refresh the page.', 'warning');
             // Still try to load the map even if visits can't be fetched
             if (countriesGeoJSON) {
                 updateMap();
-            } else {
-                showNotification('Failed to load map data. Please refresh the page.', 'danger');
             }
         });
 
@@ -367,18 +367,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            const response = await fetch('/countries/api/visits/', {
+            const response = await fetch('/api/visits/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCsrfToken(),
                 },
-                body: JSON.stringify({ iso_code: isoCode, status: status }),
+                body: JSON.stringify({ 
+                    iso_code: isoCode, 
+                    status: status 
+                }),
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            
 
             const data = await response.json();
             console.log('Visit created successfully:', data);
@@ -391,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification(`Country marked as ${status === 'visited' ? 'visited' : 'want to visit'}`);
             
             // Refresh map and lists
-            await updateMap();
+            updateMap();
             updateLists();
 
         } catch (error) {

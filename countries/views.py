@@ -6,9 +6,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Country, Visit
 from .serializers import CountrySerializer, VisitSerializer
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-import json
 
 class MapView(LoginRequiredMixin, TemplateView):
     """Main view for the map interface"""
@@ -38,48 +35,50 @@ def country_list(request):
     serializer = CountrySerializer(countries, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def get_visits(request):
-    """API endpoint for getting user's visits"""
-    visits = Visit.objects.filter(user=request.user)
-    serializer = VisitSerializer(visits, many=True)
-    return Response(serializer.data)
-
-
-
-@api_view(['POST'])
-def create_visit(request):
-    """API endpoint for creating a visit"""
-    try:
-        country = Country.objects.get(iso_code=request.data['iso_code'])
-        visit, created = Visit.objects.get_or_create(
-            user=request.user,
-            country=country,
-            defaults={'status': request.data['status']}
-        )
-        if not created:
-            visit.status = request.data['status']
-            visit.save()
-        serializer = VisitSerializer(visit)
-        return Response(serializer.data)
-    except Country.DoesNotExist:
-        return Response({'error': 'Country not found'}, status=404)
-    
-@csrf_exempt
+@api_view(['GET', 'POST'])
+@login_required
 def visits_view(request):
+    """API endpoint to list and create visits"""
     if request.method == 'GET':
-        return get_visits(request)
+        visits = Visit.objects.filter(user=request.user)
+        serializer = VisitSerializer(visits, many=True)
+        return Response(serializer.data)
+    
     elif request.method == 'POST':
-        return create_visit(request)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        try:
+            country = Country.objects.get(iso_code=request.data['iso_code'])
+            visit, created = Visit.objects.get_or_create(
+                user=request.user,
+                country=country,
+                defaults={'status': request.data['status']}
+            )
+            if not created:
+                visit.status = request.data['status']
+                visit.save()
+            serializer = VisitSerializer(visit)
+            return Response(serializer.data)
+        except Country.DoesNotExist:
+            return Response({'error': 'Country not found'}, status=404)
 
-@api_view(['DELETE'])
-def update_delete_visit(request, iso_code):
-    """API endpoint for deleting a visit"""
+@api_view(['DELETE', 'PUT'])
+@login_required
+def visit_detail(request, iso_code):
+    """API endpoint to update or delete a visit"""
     try:
-        visit = Visit.objects.get(user=request.user, country__iso_code=iso_code)
-        visit.delete()
-        return Response(status=204)
+        visit = Visit.objects.get(
+            user=request.user,
+            country__iso_code=iso_code
+        )
+        
+        if request.method == 'DELETE':
+            visit.delete()
+            return Response(status=204)
+            
+        elif request.method == 'PUT':
+            visit.status = request.data.get('status', visit.status)
+            visit.save()
+            serializer = VisitSerializer(visit)
+            return Response(serializer.data)
+            
     except Visit.DoesNotExist:
         return Response({'error': 'Visit not found'}, status=404)

@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from countries.models import Visit, Country
 
 def login_view(request):
     if request.method == 'POST':
@@ -27,10 +29,35 @@ def register_view(request):
         form = UserCreationForm()
     return render(request, 'users/register.html', {'form': form})
 
+@login_required
 def profile_view(request):
-    if not request.user.is_authenticated:
-        return redirect('users:login')
-    return render(request, 'users/profile.html', {'user': request.user})
+    try:
+        visits = Visit.objects.filter(user=request.user)
+        visited_count = visits.filter(status='visited').count()
+        want_to_visit_count = visits.filter(status='want_to_visit').count()
+        total_countries = Country.objects.count()
+        remaining_count = total_countries - (visited_count + want_to_visit_count)
+        completion_percentage = (visited_count / total_countries) * 100 if total_countries > 0 else 0
+
+        stats = [
+            {'value': visited_count, 'label': 'Countries Visited', 'color': 'text-success'},
+            {'value': want_to_visit_count, 'label': 'Wish List', 'color': 'text-primary'},
+            {'value': remaining_count, 'label': 'Left to Explore', 'color': 'text-info'},
+        ]
+
+        context = {
+            'visits': visits,
+            'stats': stats,
+            'completion_percentage': completion_percentage,
+            'total_countries': total_countries,
+            'visited_count': visited_count,
+        }
+        return render(request, 'users/profile.html', context)
+    
+    except Exception as e:
+        return render(request, 'users/profile.html', {
+            'error': 'Unable to load profile data. Please try again later.',
+        })
 
 def logout_view(request):
     logout(request)

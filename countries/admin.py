@@ -9,8 +9,8 @@ class CountryAdmin(admin.ModelAdmin):
     list_per_page = 50
 
     def visit_count(self, obj):
-        return obj.visit_set.count()
-    visit_count.short_description = 'Total Visits'
+        return obj.visits.count()  # Changed from visit_set to visits
+    visit_count.short_description = 'Number of Visits'
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
