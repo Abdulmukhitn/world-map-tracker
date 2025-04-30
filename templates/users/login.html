@@ -109,6 +109,15 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Load Appwrite SDK before auth.js -->
 <script src="https://cdn.appwrite.io/sdk/web/appwrite.js"></script>
-<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/auth.js' %}" defer></script>
+
+<!-- Add error handling -->
+<script>
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo);
+    return false;
+};
+</script>
 {% endblock %}

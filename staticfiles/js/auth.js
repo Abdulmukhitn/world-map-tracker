@@ -1,8 +1,6 @@
-import { Client, Account } from 'appwrite';
-
-// Initialize Appwrite client
-const client = new Client();
-const auth = new Account(client);
+// Change from ES modules to CDN usage
+const client = new Appwrite.Client();
+const auth = new Appwrite.Account(client);
 
 client
     .setEndpoint('https://fra.cloud.appwrite.io/v1')

@@ -6,16 +6,15 @@ from django.contrib.auth.decorators import login_required
 from countries.models import Visit, Country
 
 def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('countries:index')
-        else:
-            messages.error(request, 'Invalid username or password.')
-    return render(request, 'users/login.html')
+    try:
+        context = {
+            'APPWRITE_ENDPOINT': 'https://fra.cloud.appwrite.io/v1',
+            'APPWRITE_PROJECT_ID': '68125b020008f58668cb',
+        }
+        return render(request, 'users/login.html', context)
+    except Exception as e:
+        messages.error(request, f"Authentication error: {str(e)}")
+        return render(request, 'users/login.html', {'error': str(e)})
 
 def register_view(request):
     if request.method == 'POST':

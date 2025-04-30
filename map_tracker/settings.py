@@ -16,7 +16,7 @@ STATICFILES_DIRS = [
 # Ensure WhiteNoise is configured
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -198,3 +198,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 APPWRITE_ENDPOINT = 'https://fra.cloud.appwrite.io/v1'
 APPWRITE_PROJECT_ID = '68125b020008f58668cb'
 APPWRITE_API_KEY = 'YOUR_API_KEY'
+
+# Add CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "https://fra.cloud.appwrite.io",
+    "https://world-map-tracker-gnda.onrender.com",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://fra.cloud.appwrite.io",
+    "https://world-map-tracker-gnda.onrender.com",
+]
