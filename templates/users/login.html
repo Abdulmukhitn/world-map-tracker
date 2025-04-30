@@ -1,32 +1,114 @@
 <!-- templates/users/login.html -->
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Login - World Map Tracker{% endblock %}
 
+{% block extra_css %}
+<style>
+    .login-container {
+        max-width: 400px;
+        margin: 2rem auto;
+    }
+
+    .social-login-button {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+
+    .social-login-button:hover {
+        background: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .social-login-button img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        vertical-align: middle;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .divider span {
+        padding: 0 1rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .login-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Login</h4>
+<div class="login-container">
+    <div class="login-form">
+        <h2 class="text-center mb-4">Welcome Back</h2>
+        
+        <!-- Social Login Buttons -->
+        <button id="google-login" class="social-login-button">
+            <img src="{% static 'images/google2.png' %}" alt="Google" width="24" height="24">
+            <span>Continue with Google</span>
+        </button>
+
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <!-- Traditional Login Form -->
+        <form id="login-form" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" id="id_username" required>
             </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label">Username</label>
-                        <input type="text" name="username" class="form-control" id="id_username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_password" class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" id="id_password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                </form>
-                <hr>
-                <p class="mb-0">Don't have an account? <a href="{% url 'users:register' %}">Register</a></p>
+            <div class="mb-3">
+                <label for="id_password" class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" id="id_password" required>
             </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <p class="mb-0">Don't have an account? <a href="{% url 'users:register' %}">Register</a></p>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.appwrite.io/sdk/web/appwrite.js"></script>
+<script src="{% static 'js/auth.js' %}"></script>
 {% endblock %}
