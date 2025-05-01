@@ -7,6 +7,16 @@ client
     .setProject('68125b020008f58668cb');
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Appwrite
+    const client = new Appwrite();
+    
+    // Set Appwrite project details
+    client
+        .setEndpoint('https://fra.cloud.appwrite.io/v1')
+        .setProject('68125b020008f58668cb');
+    
+    const account = new Appwrite.Account(client);
+    
     const googleLoginBtn = document.getElementById('google-login');
     const loginForm = document.getElementById('login-form');
     
@@ -15,16 +25,21 @@ document.addEventListener('DOMContentLoaded', function() {
         googleLoginBtn.addEventListener('click', async function(e) {
             e.preventDefault();
             try {
+                console.log('Starting Google OAuth...');
                 // Create OAuth2 session
-                await auth.createOAuth2Session(
+                const session = await account.createOAuth2Session(
                     'google',
-                    'https://fra.cloud.appwrite.io/v1/account/sessions/oauth2/callback/google/68125b020008f58668cb',
-                    'https://world-map-tracker-gnda.onrender.com/users/login/?next=/',
+                    'https://world-map-tracker-gnda.onrender.com/auth/callback',
+                    'https://world-map-tracker-gnda.onrender.com/users/login/',
                     ['profile', 'email']
                 );
+                console.log('OAuth session created:', session);
             } catch (error) {
                 console.error('Google login failed:', error);
-                showError('Failed to login with Google. Please try again.');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = 'Failed to login with Google. Please try again.';
+                googleLoginBtn.parentNode.insertBefore(errorDiv, googleLoginBtn.nextSibling);
             }
         });
     }

@@ -109,15 +109,14 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Load Appwrite SDK before auth.js -->
-<script src="https://cdn.appwrite.io/sdk/web/appwrite.js"></script>
-<script src="{% static 'js/auth.js' %}" defer></script>
-
-<!-- Add error handling -->
+{% load static %}
+<!-- Load latest Appwrite Web SDK -->
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+<script src="{% static 'js/auth.js' %}" type="text/javascript" defer></script>
+<!-- Add error logging -->
 <script>
-window.onerror = function(msg, url, lineNo, columnNo, error) {
-    console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo);
-    return false;
-};
+window.addEventListener('error', function(e) {
+    console.error('Script error:', e);
+});
 </script>
 {% endblock %}

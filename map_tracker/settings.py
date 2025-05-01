@@ -15,6 +15,7 @@ STATICFILES_DIRS = [
 
 # Ensure WhiteNoise is configured
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Add this at the top
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
+    'corsheaders',
     
     # Custom apps
     'countries',
@@ -201,9 +203,12 @@ APPWRITE_API_KEY = 'YOUR_API_KEY'
 
 # Add CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "https://fra.cloud.appwrite.io",
-    "https://world-map-tracker-gnda.onrender.com",
+    'https://fra.cloud.appwrite.io',
+    'https://world-map-tracker-gnda.onrender.com',
+    'http://localhost:8000',
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://fra.cloud.appwrite.io",
