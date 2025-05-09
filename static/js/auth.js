@@ -2,9 +2,7 @@
 const client = new Appwrite.Client();
 const auth = new Appwrite.Account(client);
 
-client
-    .setEndpoint('https://fra.cloud.appwrite.io/v1')
-    .setProject('68125b020008f58668cb');
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Appwrite
