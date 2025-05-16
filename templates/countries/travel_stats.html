@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Travel Statistics - World Map Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        transition: all 0.3s ease;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    
+    .stat-label {
+        color: #7f8c8d;
+        font-size: 1rem;
+    }
+    
+    .progress-circle {
+        position: relative;
+        height: 120px;
+        width: 120px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        overflow: hidden;
+    }
+    
+    .map-container {
+        height: 300px;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Your Travel Statistics</h2>
+    
+    <!-- Overview Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="stats-card bg-white p-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-globe-americas fa-2x text-primary me-3"></i>
+                    <div>
+                        <div class="stat-number">{{ stats.total_countries }}</div>
+                        <div class="stat-label">Countries Visited</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stats-card bg-white p-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-mountain fa-2x text-success me-3"></i>
+                    <div>
+                        <div class="stat-number">{{ stats.continents_visited }}</div>
+                        <div class="stat-label">Continents Explored</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stats-card bg-white p-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-plane fa-2x text-info me-3"></i>
+                    <div>
+                        <div class="stat-number">{{ stats.planned_trips.count }}</div>
+                        <div class="stat-label">Planned Trips</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detailed Statistics -->
+    <div class="row g-4">
+        <!-- Top Regions -->
+        <div class="col-md-6">
+            <div class="stats-card bg-white p-4">
+                <h5 class="mb-4">Most Visited Regions</h5>
+                <div id="regionsChart"></div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="col-md-6">
+            <div class="stats-card bg-white p-4">
+                <h5 class="mb-4">Recent Visits</h5>
+                <div class="list-group">
+                    {% for visit in stats.recent_visits %}
+                    <div class="list-group-item border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ visit.country.name }}</h6>
+                                <small class="text-muted">{{ visit.created_at|date }}</small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">Visited</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/travel-stats.js' %}"></script>
+{% endblock %}

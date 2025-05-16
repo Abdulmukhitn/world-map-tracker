@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Default Avatar</title>
+    <script>
+        function generateAvatar() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = '#3d8bfd';
+            ctx.fillRect(0, 0, 200, 200);
+
+            // Text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 100px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('W', 100, 100);
+
+            // Download
+            const link = document.createElement('a');
+            link.download = 'default-avatar.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</head>
+<body onload="generateAvatar()">
+    <p>Generating default avatar...</p>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<form id="profileEditForm" method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="id_bio" class="form-label">Bio</label>
+        {{ form.bio }}
+    </div>
+    <div class="mb-3">
+        <label for="id_location" class="form-label">Location</label>
+        {{ form.location }}
+    </div>
+    <div class="mb-3">
+        <label for="id_website" class="form-label">Website</label>
+        {{ form.website }}
+    </div>
+    <div class="mb-3">
+        <label for="id_travel_style" class="form-label">Travel Style</label>
+        {{ form.travel_style }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Social Links</label>
+        <div id="socialLinksContainer">
+            {% for platform, link in user.profile.social_links.items %}
+            <div class="input-group mb-2">
+                <input type="text" class="form-control platform-input" placeholder="Platform" value="{{ platform }}">
+                <input type="text" class="form-control link-input" placeholder="Link" value="{{ link }}">
+                <button type="button" class="btn btn-outline-danger remove-social-link">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="addSocialLink">
+            <i class="fas fa-plus"></i> Add Social Link
+        </button>
+    </div>
+    {{ form.social_links }}
+    <div class="mt-4 text-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </div>
+</form>

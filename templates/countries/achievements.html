@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Achievements - World Map Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .achievement-section {
+        margin-bottom: 3rem;
+    }
+
+    .achievement-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .achievement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .achievement-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .achievement-locked {
+        filter: grayscale(100%);
+        opacity: 0.7;
+    }
+
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+        background-color: #e9ecef;
+        overflow: hidden;
+    }
+
+    .achievement-title {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .stats-overview {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Stats Overview -->
+    <div class="stats-overview mb-5">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <div class="stats-number">{{ stats.countries_visited }}</div>
+                    <div class="text-white-50">Countries Visited</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <div class="stats-number">{{ stats.continents_visited }}</div>
+                    <div class="text-white-50">Continents Explored</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explorer Achievements -->
+    <div class="achievement-section">
+        <h3 class="mb-4">{{ achievements.explorer.name }}</h3>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for level in achievements.explorer.levels %}
+            <div class="col">
+                <div class="achievement-card p-4 {% if stats.countries_visited < level.count %}achievement-locked{% endif %}">
+                    <div class="achievement-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="fas {{ level.icon }}"></i>
+                    </div>
+                    <h5 class="achievement-title">{{ level.title }}</h5>
+                    <p class="text-muted">Visit {{ level.count }} countries</p>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar"
+                             aria-valuenow="{% widthratio stats.countries_visited level.count 100 %}"
+                             aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        Progress: {{ stats.countries_visited }}/{{ level.count }}
+                    </small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Continent Achievements -->
+    <div class="achievement-section">
+        <h3 class="mb-4">{{ achievements.continent.name }}</h3>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for level in achievements.continent.levels %}
+            <div class="col">
+                <div class="achievement-card p-4 {% if stats.continents_visited < level.count %}achievement-locked{% endif %}">
+                    <div class="achievement-icon bg-success bg-opacity-10 text-success">
+                        <i class="fas {{ level.icon }}"></i>
+                    </div>
+                    <h5 class="achievement-title">{{ level.title }}</h5>
+                    <p class="text-muted">Explore {{ level.count }} continents</p>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             aria-valuenow="{% widthratio stats.continents_visited level.count 100 %}"
+                             aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        Progress: {{ stats.continents_visited }}/{{ level.count }}
+                    </small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars on page load
+    setTimeout(() => {
+        document.querySelectorAll('.progress-bar').forEach(bar => {
+            bar.style.transition = 'width 1s ease-in-out';
+            bar.style.width = bar.getAttribute('aria-valuenow') + '%';
+        });
+    }, 200);
+});
+</script>
+{% endblock %}

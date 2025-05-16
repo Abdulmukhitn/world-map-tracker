@@ -46,21 +46,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    
-    # Third-party apps
     'rest_framework',
-    'allauth',  # Remove duplicates
+    'countries.apps.CountriesConfig',
+    'accounts.apps.AccountsConfig',  # Rename 'users' to 'accounts'
+    'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.facebook',
-    'corsheaders',
-    
-    # Custom apps
-    'countries',
-    'users',
-    'ai_guide',
 ]
+
 SITE_ID = 1
 AUTHENTICATION_BACKENDS = [  # Fixed typo in AUTHENTICATION_BACKENDS
     'django.contrib.auth.backends.ModelBackend',
@@ -131,10 +124,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Login URL
-LOGIN_URL = '/users/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = 'users:login'  # Updated to use namespaced URL
+# Authentication settings
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'accounts:profile'
+LOGOUT_REDIRECT_URL = 'accounts:login'
 
 # Social Auth Configuration
 SOCIALACCOUNT_PROVIDERS = {
@@ -214,3 +207,14 @@ CSRF_TRUSTED_ORIGINS = [
     "https://fra.cloud.appwrite.io",
     "https://world-map-tracker-gnda.onrender.com",
 ]
+
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Add media serving for development
+if DEBUG:
+    MIDDLEWARE += [
+        'whitenoise.middleware.WhiteNoiseMiddleware',
+    ]
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

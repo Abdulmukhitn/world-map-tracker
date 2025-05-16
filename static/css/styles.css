@@ -18,6 +18,7 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 20px;
     z-index: 1;
+    background-color: var(--map-bg);
 }
 
 /* Cards */
@@ -26,6 +27,9 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border-radius: 5px;
     overflow: hidden;
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
 }
 
 .card-header {
@@ -60,10 +64,13 @@ body {
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.2s;
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
 }
 
 .list-group-item:hover {
-    background-color: #f8f9fa;
+    background-color: var(--list-hover);
 }
 
 .btn-group-sm > .btn {
@@ -91,6 +98,9 @@ body {
     border-radius: 4px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     z-index: 1000;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--card-border);
 }
 
 /* Make the app responsive */
@@ -126,6 +136,18 @@ body {
 
 .leaflet-popup-content-wrapper {
     border-radius: 8px;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--card-border);
+}
+
+.leaflet-container {
+    background-color: var(--bg-secondary) !important;
+    background: var(--map-bg) !important;
+}
+
+.leaflet-popup-tip {
+    background-color: var(--card-bg);
 }
 
 /* Country click popup styles */
@@ -133,6 +155,8 @@ body {
     text-align: center;
     padding: 10px;
     min-width: 200px;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
 }
 
 .country-modal h5 {
@@ -140,6 +164,7 @@ body {
     text-align: center;
     color: #333;
     font-weight: bold;
+    color: var(--text-primary);
 }
 
 .country-modal .btn {
@@ -168,6 +193,9 @@ body {
     padding: 8px;
     border-radius: 4px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    background: var(--legend-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--card-border);
 }
 
 .legend i {
@@ -176,4 +204,161 @@ body {
     float: left;
     margin-right: 8px;
     opacity: 0.7;
+}
+
+/* Dark mode variables and card styles */
+:root[data-theme="dark"] {
+    --card-bg: #2a2e37;
+    --card-border: #3a3f48;
+    --text-primary: #e9ecef;
+    --text-secondary: #adb5bd;
+    --map-bg: #1a1d21;
+    --list-hover: #32363f;
+    --stats-card-bg: #2a2e37;
+    --legend-bg: #2a2e37;
+    --list-bg: #2a2e37;
+    --list-header-bg: #32363f;
+    --list-border: #3a3f48;
+    --list-hover: #3f434d;
+    --list-title-color: #ffffff;
+}
+
+:root[data-theme="light"] {
+    --card-bg: #ffffff;
+    --card-border: #dee2e6;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --map-bg: #f8f9fa;
+    --list-hover: #f8f9fa;
+    --stats-card-bg: #ffffff;
+    --legend-bg: #ffffff;
+    --list-bg: #ffffff;
+    --list-header-bg: #f8f9fa;
+    --list-border: #dee2e6;
+    --list-title-color: #212529;
+}
+
+/* Stats cards */
+.stats-card {
+    background-color: var(--stats-card-bg);
+    border: 1px solid var(--card-border);
+}
+
+/* Country lists */
+.countries-list {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.countries-list h2 {
+    color: var(--text-primary);
+}
+
+/* Progress bar container */
+.progress {
+    background-color: var(--card-border);
+}
+
+/* Stats overview cards */
+.stats-overview {
+    background-color: var(--stats-card-bg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stats-number {
+    color: var(--text-primary);
+}
+
+/* Map popup customization */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--card-border);
+}
+
+/* Country Lists Styling */
+.countries-list-container {
+    background-color: var(--list-bg);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: 1px solid var(--list-border);
+}
+
+.countries-list-header {
+    background-color: var(--list-header-bg);
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--list-border);
+    border-radius: 10px 10px 0 0;
+}
+
+.countries-list-header h2 {
+    color: var(--list-title-color);
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.countries-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.country-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--list-border);
+    color: var(--text-primary);
+    background-color: var(--list-bg);
+    transition: background-color 0.2s ease;
+}
+
+.country-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 10px 10px;
+}
+
+.country-item:hover {
+    background-color: var(--list-hover);
+}
+
+.country-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.country-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Profile page stats cards */
+.profile-stats-card {
+    background-color: var(--list-bg);
+    border: 1px solid var(--list-border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: transform 0.2s ease;
+}
+
+.profile-stats-card:hover {
+    transform: translateY(-2px);
+}
+
+.stats-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.stats-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }

@@ -23,6 +23,60 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
     {% block extra_css %}{% endblock %}
+    <style>
+        :root[data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-color: #0d6efd;
+            --success-color: #198754;
+            --card-bg: #ffffff;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #1a1d21;
+            --bg-secondary: #242830;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --border-color: #373b42;
+            --accent-color: #3d8bfd;
+            --success-color: #2fb344;
+            --card-bg: #242830;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+
+        .navbar {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        .nav-link {
+            color: var(--text-primary) !important;
+        }
+
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+
+        .achievement-card {
+            background-color: var(--card-bg);
+        }
+
+        .stats-overview {
+            background: linear-gradient(135deg, #2b3035 0%, #373b42 100%);
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -34,24 +88,32 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
+                        <button id="theme-toggle" class="btn btn-link nav-link">
+                            <i class="fas fa-moon" id="theme-icon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'countries:map' %}">Map</a>
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:profile' %}">Profile</a>
+                        <a class="nav-link" href="{% url 'accounts:profile' %}">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <form method="post" action="{% url 'users:logout' %}" class="nav-item">
+                        <a class="nav-link" href="{% url 'countries:achievements' %}">Achievements</a>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'accounts:logout' %}" class="nav-item">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-link nav-link">Logout</button>
                         </form>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:login' %}">Login</a>
+                        <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:register' %}">Register</a>
+                        <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -88,6 +150,22 @@
     
     <!-- Custom JS -->
     <script src="{% static 'js/map.js' %}"></script>
-    {% block extra_js %}{% endblock %}
+    <script src="{% static 'js/theme.js' %}"></script>
+    {% block extra_js %}
+    <script src="{% static 'js/travel.js' %}"></script>
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'accounts:logout' %}" class="nav-item">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-link nav-link">Logout</button>
+    </form>
+{% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
+    </li>
+{% endif %}
+    {% endblock %}
 </body>
 </html>
